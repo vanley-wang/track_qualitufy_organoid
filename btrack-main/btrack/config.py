@@ -1,0 +1,181 @@
+from btrack import _version
+
+from . import constants
+from .btypes import ImagingVolume
+from .models import HypothesisModel, MotionModel, ObjectModel
+from .utils import read_hypothesis_model, read_motion_model, read_object_model
+
+import json
+import logging
+import os
+from pathlib import Path
+
+import numpy as np
+from pydantic import BaseModel, Field, field_validator
+
+# get the logger instance
+logger = logging.getLogger(__name__)
+
+
+class TrackerConfig(BaseModel):
+    """Configuration for `BayesianTracker`.
+
+    Parameters
+    ----------
+    name : str
+        A name identifier for the model.
+    version : str
+        A string representing the version of `btrack` used.
+    verbose : bool
+        A flag to set the verbosity level while logging the output.
+    motion_model : Optional[MotionModel]
+        The `btrack` motion model. See `models.MotionModel` for more details.
+    object_model : Optional[ObjectModel]
+        The `btrack` object model. See `models.ObjectModel` for more details.
+    hypothesis_model : Optional[HypothesisModel]
+        The `btrack` hypothesis model. See `models.HypothesisModel` for more
+        details.
+    max_search_radius : float
+        The maximum search radius of the algorithm in isotropic units of the
+        data. Should be greater than zero.
+    return_kalman : bool
+        Flag to request the Kalman debug info when returning tracks.
+    volume : Optional[ImagingVolume]
+        The imaging volume as [(xlo, xhi), ..., (zlo, zhi)]. See
+        :py:meth:`btrack.btypes.ImagingVolume` for more details.
+    update_method : constants.BayesianUpdates
+        The method to perform the bayesian updates during tracklet linking.
+
+            * BayesianUpdates.EXACT
+                Use the exact Bayesian update method. Can be slow for systems
+                with many objects.
+            * BayesianUpdates.APPROXIMATE
+                Use the approximate Bayesian update method. Useful for systems
+                with may objects.
+            * BayesianUpdates.CUDA
+                Use the CUDA implementation of the Bayesian update method. Not
+                currently implemented.
+    optimizer_options: dict
+        Additional options to pass to the optimizer. See `cvxopt.glpk` for more
+        details of options that can be passed.
+    features : list
+        A list of feature names to be used during tracking updates. These must
+        correspond to named features found in the properties of each
+        `:py:class:btrack.btypes.PyTrackObject` in the dataset.
+    tracking_updates : list
+        A list of features to be used for tracking, such as MOTION or VISUAL.
+        Must have at least one entry.
+    enable_optimisation
+        A flag which, if `False`, will report a warning to the user if they then
+        subsequently run the `BayesianTracker.optimise()` step.
+
+    Notes
+    -----
+    TODO(arl): add more validation to parameters.
+    """
+
+    name: str = "Default"
+    version: str = _version.version
+    verbose: bool = False
+    motion_model: MotionModel | None = None
+    object_model: ObjectModel | None = None
+    hypothesis_model: HypothesisModel | None = None
+    max_search_radius: float = constants.MAX_SEARCH_RADIUS
+    return_kalman: bool = False
+    store_candidate_graph: bool = False
+    volume: ImagingVolume | None = None
+    update_method: constants.BayesianUpdates = constants.BayesianUpdates.EXACT
+    optimizer_options: dict = constants.GLPK_OPTIONS
+    features: list[str] = []
+    tracking_updates: list[constants.BayesianUpdateFeatures] = Field(
+        default=[constants.BayesianUpdateFeatures.MOTION],
+        min_length=1,
+        max_length=len(constants.BayesianUpdateFeatures),
+    )
+    enable_optimisation: bool = True
+
+    @field_validator("volume", mode="before")
+    @classmethod
+    def _parse_volume(cls, v):
+        return ImagingVolume(*v) if isinstance(v, tuple) else v
+
+    @field_validator("tracking_updates", mode="before")
+    @classmethod
+    def _parse_tracking_updates(cls, v):
+        _tracking_updates = v
+        if all(isinstance(k, str) for k in _tracking_updates):
+            _tracking_updates = [
+                constants.BayesianUpdateFeatures[k.upper()] for k in _tracking_updates
+            ]
+        _tracking_updates = list(set(_tracking_updates))
+        return _tracking_updates
+
+    model_config = {
+        "arbitrary_types_allowed": True,
+        "validate_assignment": True,
+        "json_encoders": {
+            np.ndarray: lambda x: x.ravel().tolist(),
+        },
+    }
+
+
+def load_config(filename: os.PathLike) -> TrackerConfig:
+    """Load a tracker configuration from a file.
+
+    Parameters
+    ----------
+    filename : os.PathLike
+        The filename to load the file.
+
+    Returns
+    -------
+    cfg : TrackerConfig
+        The tracker configuration.
+    """
+    logger.info(f"Loading configuration file: {filename}")
+    filename = Path(filename)
+
+    with open(filename, "r") as json_file:
+        json_data = json.load(json_file)
+
+    if "TrackerConfig" in json_data:
+        cfg = _load_legacy_config(json_data)
+    else:
+        cfg = _load_config(json_data)
+
+    assert cfg.motion_model is not None
+    return cfg
+
+
+def _load_legacy_config(json_data: dict) -> TrackerConfig:
+    """Load a legacy config file."""
+    config = json_data["TrackerConfig"]
+
+    t_config = {
+        "motion_model": read_motion_model(config),
+        "object_model": read_object_model(config),
+        "hypothesis_model": read_hypothesis_model(config),
+    }
+
+    return TrackerConfig(**t_config)
+
+
+def _load_config(json_data: dict) -> TrackerConfig:
+    """Load a new style config from a JSON file."""
+    return TrackerConfig(**json_data)
+
+
+def save_config(filename: os.PathLike, cfg: TrackerConfig) -> None:
+    """Save the config to a JSON file.
+
+    Parameters
+    ----------
+    filename : os.PathLike
+        The filename to save the configuration file.
+    cfg : TrackerConfig
+        The tracker configuration to save.
+    """
+
+    with open(filename, "w") as json_file:
+        json_data = json.loads(cfg.json())
+        json.dump(json_data, json_file, indent=2, separators=(",", ": "))
