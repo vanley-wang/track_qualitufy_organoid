@@ -1,0 +1,8 @@
+columnName	title	Plugin	description	unitLabel	DICOM.QuantityCode	DICOM.UnitsCode	DICOM.MeasurementMethodCode	type	componentNames
+Segment	Segment							string	
+Voxel count	Voxel count	Label Map	Number of voxels in the binary labelmap representation of the segment.		CodeValue:nvoxels|CodingSchemeDesignator:99QIICR|CodeMeaning:Number of voxels	CodeValue:voxels|CodingSchemeDesignator:UCUM|CodeMeaning:voxels		long	
+Volume mm3 (LM)	Volume (LM)	Label Map	Volume of the segment computed from binary labelmap representation.	mm3	CodeValue:118565006|CodingSchemeDesignator:SCT|CodeMeaning:Volume	CodeValue:mm3|CodingSchemeDesignator:UCUM|CodeMeaning:cubic millimeter		double	
+Volume cm3 (LM)	Volume (LM)	Label Map	Volume of the segment computed from binary labelmap representation.	cm3	CodeValue:118565006|CodingSchemeDesignator:SCT|CodeMeaning:Volume	CodeValue:cm3|CodingSchemeDesignator:UCUM|CodeMeaning:cubic centimeter	CodeValue:126030|CodingSchemeDesignator:DCM|CodeMeaning:Sum of segmented voxel volumes	double	
+Surface mm2	Surface area	Closed Surface	Surface area computed from closed surface representation.	mm2	CodeValue:000247|CodingSchemeDesignator:99CHEMINF|CodeMeaning:Surface area	CodeValue:mm2|CodingSchemeDesignator:UCUM|CodeMeaning:square millimeter		double	
+Volume mm3 (CS)	Volume (CS)	Closed Surface	Volume computed from closed surface representation.	mm3	CodeValue:118565006|CodingSchemeDesignator:SCT|CodeMeaning:Volume	CodeValue:mm3|CodingSchemeDesignator:UCUM|CodeMeaning:cubic millimeter		double	
+Volume cm3 (CS)	Volume (CS)	Closed Surface	Volume computed from closed surface representation.	cm3	CodeValue:118565006|CodingSchemeDesignator:SCT|CodeMeaning:Volume	CodeValue:cm3|CodingSchemeDesignator:UCUM|CodeMeaning:cubic centimeter		double	
