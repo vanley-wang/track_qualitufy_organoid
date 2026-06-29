@@ -1,0 +1,80 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE / editor
+.vscode/
+.idea/
+.history/
+.continue/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Project data and generated results
+Data/
+!Data/FXNJ?20230701/data/image/
+!Data/FXNJ?20230701/data/image/**
+训练数据样本/
+undersample/
+nnUNet_FXN_2023/
+
+# Model checkpoints / trained weights / artifacts
+checkpoints/
+models/
+model/
+PCA_model/
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.pkl
+*.pickle
+*.yaml
+*yml
+*.h
+
+# Scientific / medical / MATLAB data files
+*.nii
+*.nii.gz
+*nii.seg.nrrd
+*.mat
+*.h5
+*.hdf5
+*.tr
+*.rst
+*.txt
+*.csv
+*.java
+*.npy
+*.lut
+*.m
+*.nrrd
+*.ipynb
+*.npz
+
+# Images / Office / result artifacts
+*.png
+*.jpg
+*.jpeg
+*.tif
+*.tiff
+*.bmp
+*.xlsx
+*.xls
+*.pptx
+*.ppt
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
