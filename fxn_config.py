@@ -130,6 +130,57 @@ def pixels_to_um(pixels, axis='x'):
         raise ValueError("axis must be 'x', 'y', or 'z'")
 
 
+# ============ Well 分组映射 ============
+# 每个 well 前缀（不含 _1 后缀）对应浓度组
+WELL_GROUPS = {
+    # Control
+    'F2': 'Control', 'F3': 'Control', 'F4': 'Control', 'F5': 'Control',
+    'F6': 'Control', 'F7': 'Control', 'F8': 'Control', 'F9': 'Control',
+    'F10': 'Control', 'F11': 'Control', 'B11': 'Control', 'C11': 'Control',
+    'D11': 'Control', 'E11': 'Control',
+    # 20 uM
+    'B2': '20uM', 'B3': '20uM', 'B4': '20uM',
+    'C2': '20uM', 'C3': '20uM', 'C4': '20uM',
+    # 40 uM
+    'B5': '40uM', 'B6': '40uM', 'B7': '40uM',
+    'C5': '40uM', 'C6': '40uM', 'C7': '40uM',
+    # 80 uM
+    'B8': '80uM', 'B9': '80uM', 'B10': '80uM',
+    'C8': '80uM', 'C9': '80uM', 'C10': '80uM',
+}
+
+GROUP_COLORS = {
+    'Control': '#3498db',  # 蓝
+    '20uM': '#2ecc71',     # 绿
+    '40uM': '#f39c12',     # 橙
+    '80uM': '#e74c3c',     # 红
+}
+
+
+# ============ 多特征匹配权重 ============
+# 加权距离公式: D_total = w1*D_centroid + w2*D_volume + w3*D_sphericity
+MF_WEIGHT_CENTROID = 1.0    # 质心距离权重 (pixels)
+MF_WEIGHT_VOLUME = 50.0     # 体积差异权重 (归一化)
+MF_WEIGHT_SPHERICITY = 30.0 # 球形度差异权重
+
+# 多特征匹配最大距离阈值（按组设置）
+# Control 组变化小，阈值小；加药组变化大，阈值大
+MF_MAX_DISTANCE_BY_GROUP = {
+    'Control': 150,
+    '20uM': 200,
+    '40uM': 250,
+    '80uM': 300,
+}
+
+# 默认阈值
+MF_MAX_DISTANCE = 150  # pixels
+
+
+# ============ 配准参数 ============
+# 使用仿射配准（affine），比 rigid 灵活，比 bspline 稳定
+AFFINE_MAX_ITERATIONS = 1000
+
+
 def print_config():
     print("=" * 60)
     print("FXN Organoid Tracking Configuration")
