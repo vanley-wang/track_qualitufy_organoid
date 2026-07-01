@@ -467,9 +467,12 @@ def process_well(well_name, day3_seg_path, day5_seg_path, output_dir, max_distan
     save_nifti(label3, affine3, os.path.join(well_output_dir, f'{well_name}_day3_matched.nii.gz'))
     save_nifti(label5_matched, affine5, os.path.join(well_output_dir, f'{well_name}_day5_matched.nii.gz'))
 
-    # NRRD 格式（用于 3D Slicer）
-    save_seg_nrrd(label3, os.path.join(well_output_dir, f'{well_name}_day3.seg.nrrd'))
-    save_seg_nrrd(label5_matched, os.path.join(well_output_dir, f'{well_name}_day5.seg.nrrd'))
+    # NRRD 格式（用于 3D Slicer）— 使用一致颜色映射
+    consistent_color_map = build_consistent_color_map(label3, label5_matched)
+    save_seg_nrrd(label3, os.path.join(well_output_dir, f'{well_name}_day3.seg.nrrd'),
+                  id_to_color_map=consistent_color_map)
+    save_seg_nrrd(label5_matched, os.path.join(well_output_dir, f'{well_name}_day5.seg.nrrd'),
+                  id_to_color_map=consistent_color_map)
 
     # 合并数据
     df_all = pd.concat([df_day3, df_day5], ignore_index=True)

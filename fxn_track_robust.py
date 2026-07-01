@@ -48,7 +48,7 @@ except ImportError:
 
 import fxn_config as cfg
 from fxn_track_and_visualize import (
-    load_nifti, save_nifti, save_seg_nrrd,
+    load_nifti, save_nifti, save_seg_nrrd, build_consistent_color_map,
     quantify_organoid, generate_well_plots, generate_summary_plots
 )
 
@@ -386,8 +386,11 @@ def process_well(well_name, day3_path, day5_path, out_dir):
 
     save_nifti(label3_out, aff3, os.path.join(wdir, f'{well_name}_day3.nii.gz'))
     save_nifti(label5_out, aff5, os.path.join(wdir, f'{well_name}_day5.nii.gz'))
-    save_seg_nrrd(label3_out, os.path.join(wdir, f'{well_name}_day3.seg.nrrd'))
-    save_seg_nrrd(label5_out, os.path.join(wdir, f'{well_name}_day5.seg.nrrd'))
+    consistent_color_map = build_consistent_color_map(label3_out, label5_out)
+    save_seg_nrrd(label3_out, os.path.join(wdir, f'{well_name}_day3.seg.nrrd'),
+                  id_to_color_map=consistent_color_map)
+    save_seg_nrrd(label5_out, os.path.join(wdir, f'{well_name}_day5.seg.nrrd'),
+                  id_to_color_map=consistent_color_map)
 
     df_all = pd.concat([df_q3, df_q5], ignore_index=True)
     df_all.to_csv(os.path.join(wdir, f'{well_name}_quantification.csv'), index=False)
