@@ -74,7 +74,7 @@ ARGS = parser.parse_args()
 
 MIN_VOXELS = ARGS.min_voxels
 MAX_DIST_PIX = ARGS.max_distance
-OUTPUT_DIR = ARGS.output_dir or os.path.join(cfg.BASE_DIR, "results_fxn_robust")
+OUTPUT_DIR = ARGS.output_dir or os.path.join(cfg.BASE_DIR, "results_fxn_robust_new")
 
 # 计算 cutoff（物理距离 + 体积/形状余量）
 # 空间距离上限 + 体积差异(log10)上限 + 形状差异上限
